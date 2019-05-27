@@ -1,0 +1,17 @@
+---
+servers:
+
+  - name: app1
+    servers:
+      - server 127.0.0.1:8001 max_conns={{backends@{{name}}.server.max_conns}};
+      - server 127.0.0.1:8002 max_conns={{backends@{{name}}.server.max_conns}};
+
+  - name: app2
+    servers:
+      - server 127.0.0.1:9001 max_conns={{backends@{{name}}.server.max_conns}};
+      - server 127.0.0.1:9002 max_conns={{backends@{{name}}.server.max_conns}};
+
+  - name: app3
+    servers:
+      - server 127.0.0.1:7001 max_conns={{backends@{{name}}.server.max_conns}};
+      - server 127.0.0.1:7002 max_conns={{backends@{{name}}.server.max_conns}};

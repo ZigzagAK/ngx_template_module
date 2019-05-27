@@ -1,0 +1,3 @@
+location /{{name}}/ {
+    proxy_pass http://{{name}};
+}

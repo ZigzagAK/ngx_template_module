@@ -1,0 +1,10 @@
+upstream {{ name }} {
+    zone shm_{{ name }} 256k;
+
+{{ servers@{{name}}.servers }}
+
+    check passive type=http rise={{ check.rise | default({{ check@http.rise }}) }} fall={{ check.fall | default({{ check@http.fall }}) }} timeout={{ check.timeout | default({{ check@http.timeout }})}} interval={{ check.interval | default({{ check@http.interval }}) }};
+    check_request_uri {{ check.request.method | default({{ check@http.request.method }}) }} {{ check.request.uri | default({{ check@http.request.uri }}) }};
+    check_response_codes {{ check.response.codes | default({{ check@http.response.codes }}) }};
+    check_response_body {{ check.response.match | default({{ check@http.response.match }}) }};
+}

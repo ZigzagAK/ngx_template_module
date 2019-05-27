@@ -1,0 +1,34 @@
+---
+entrypoints:
+
+  - name: app1
+    listen: "{{env(APP1_LISTEN_PORT)|default(33333)}}"
+    auth:
+      request: /auth_stub
+    proxy:
+      connect_timeout: 10s
+      read_timeout: 60s
+      protocol: http
+      upstream: app1
+
+  - name: app2
+    listen: "{{env(APP2_LISTEN_PORT)|default(44444)}}"
+    auth:
+      request: /auth_stub
+    proxy:
+      connect_timeout: 10s
+      read_timeout: 60s
+      protocol: http
+
+  - name: app3
+    listen: 8081
+    auth:
+      request: /auth_stub
+    proxy:
+      connect_timeout: 10s
+      read_timeout: 60s
+      protocol: http
+    map:
+      - a 1;
+      - b 2;
+      - c 3;

@@ -1,0 +1,41 @@
+---
+services:
+
+  - name: service1
+    listen: 5001
+    auth:
+      request: /auth_stub
+    proxy:
+      connect_timeout: 10s
+      read_timeout: 60s
+      protocol: http
+      upstream: service1
+    servers:
+      - server 127.0.0.1:4001;
+      - server 127.0.0.1:4002;
+
+  - name: service2
+    listen: 5002
+    auth:
+      request: /auth_stub
+    proxy:
+      connect_timeout: 10s
+      read_timeout: 60s
+      protocol: http
+      upstream: service2
+    servers:
+      - server 127.0.0.1:5001;
+      - server 127.0.0.1:5002;
+
+  - name: service3
+    listen: 5003
+    auth:
+      request: /auth_stub
+    proxy:
+      connect_timeout: 10s
+      read_timeout: 60s
+      protocol: http
+      upstream: service3
+    servers:
+      - server 127.0.0.1:6001;
+      - server 127.0.0.1:6002;

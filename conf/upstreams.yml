@@ -1,0 +1,12 @@
+---
+upstreams:
+
+  - name: s1
+    servers:
+      - server 127.0.0.1:3001;
+      - server 127.0.0.1:3002;
+
+  - name: s2
+    servers:
+      - server 127.0.0.1:4001;
+      - server 127.0.0.1:4002;

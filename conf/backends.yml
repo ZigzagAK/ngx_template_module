@@ -1,0 +1,42 @@
+---
+backends:
+
+  - name: app1
+    server:
+      max_conns: 10
+      max_fails: 2
+      fail_timeout: 30s
+    check:
+      rise: 1
+      fall: 2
+      timeout: 10000
+      interval: 10
+      request:
+        method: GET
+        uri: /health
+      response:
+        codes: 200 204
+        match: .*
+
+  - name: app2
+    server:
+      max_conns: 100
+      max_fails: 2
+      fail_timeout: 30s
+    check:
+      rise: 1
+      fall: 2
+      timeout: 10000
+      interval: 10
+      request:
+        method: GET
+        uri: /health
+      response:
+        codes: 200 204
+        match: .*
+
+  - name: app3
+    server:
+      max_conns: 100
+      max_fails: 2
+      fail_timeout: 30s

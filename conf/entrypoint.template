@@ -1,0 +1,24 @@
+map 0 ${{name}} {
+  {{map|default()}}
+  default 0;
+}
+
+server {
+    listen {{listen}} reuseport;
+
+    default_type text/plain;
+
+    location / {
+        auth_request {{auth.request}};
+
+        proxy_connect_timeout {{proxy.connect_timeout}};
+        proxy_read_timeout {{proxy.read_timeout}};
+
+        proxy_pass {{proxy.protocol}}://{{proxy.upstream|default({{name}})}};
+    }
+
+    location = /auth_stub {
+        internal;
+        return 200;
+    }
+}

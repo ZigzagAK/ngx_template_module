@@ -1,0 +1,5 @@
+upstream {{ name }} {
+    zone shm_{{ name }} 256k;
+
+{{ servers }}
+}
