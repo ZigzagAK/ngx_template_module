@@ -932,6 +932,8 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
     ngx_str_t              keyfile = t->keyfile;
     ngx_template_seq_t    *seqs;
 
+    ngx_memzero(&file, sizeof(ngx_file_t));
+
     ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "%V:%V", &t->filename, &keyfile);
 
     if (ngx_template_read_template(cf, t) != NGX_OK)
