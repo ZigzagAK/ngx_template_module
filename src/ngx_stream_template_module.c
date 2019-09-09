@@ -25,7 +25,7 @@ static ngx_stream_module_t ngx_stream_template_ctx = {
 static ngx_command_t ngx_stream_template_commands[] = {
 
     { ngx_string("template"),
-      NGX_ALL_CONF|NGX_CONF_TAKE123,
+      NGX_ALL_CONF|NGX_CONF_1MORE,
       ngx_template_directive,
       0,
       0,
