@@ -1298,7 +1298,7 @@ reload:
     if (ngx_worker != 0)
         goto done;
 
-    ngx_log_error(NGX_LOG_NOTICE, cycle->log, ngx_errno,
+    ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0,
                   "ngx_template RELOAD");
     ngx_signal_process(cycle, "reload");
 
