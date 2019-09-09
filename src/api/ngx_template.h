@@ -50,6 +50,7 @@ typedef struct {
     time_t         updated;
     on_key_t       pfkey;
     ngx_pool_t    *pool;
+    ngx_flag_t     nocheck;
 } ngx_template_t;
 
 
