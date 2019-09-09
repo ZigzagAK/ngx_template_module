@@ -1129,6 +1129,9 @@ ngx_template_conf(ngx_conf_t *cf, ngx_template_t *t)
 
         if (ngx_eqstr(t->args.elts[j].key, "group"))
             t->group = t->args.elts[j].value;
+
+        if (ngx_eqstr(t->args.elts[j].key, "nocheck"))
+            t->nocheck = 1;
     }
 
     if (t->filename.data == NULL) {
@@ -1334,7 +1337,7 @@ ngx_template_check_updates(ngx_template_main_conf_t *tmcf)
     t = tmcf->templates.elts;
 
     for (j = 0; j < tmcf->templates.nelts; j++)
-        if (ngx_template_check_template(tmcf->cycle, t + j) == NGX_OK)
+        if (!t->nocheck && ngx_template_check_template(tmcf->cycle, t + j) == NGX_OK)
             tmcf->changed = 1;
 }
 
