@@ -1002,7 +1002,7 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
             goto nomem;
         conf_file.file.log = cf->log;
         conf_file.file.name.data = ngx_pcalloc(cf->temp_pool,
-            conf->fullname.len + t->group.len + 2);
+            conf->fullname.len + t->filename.len + 2);
         if (conf_file.file.name.data == NULL)
             goto nomem;
         conf_file.file.name.len = ngx_sprintf(conf_file.file.name.data, "%V:%V",
