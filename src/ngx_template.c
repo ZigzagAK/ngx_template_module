@@ -186,7 +186,7 @@ lookup_fun(ngx_str_t key, ngx_str_t def)
         return (*f.fun)(key, null);
     }
 
-    return null;
+    return def;
 }
 
 
