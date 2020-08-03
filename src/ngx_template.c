@@ -940,7 +940,7 @@ static ngx_int_t
 ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
 {
     ngx_template_conf_t   *conf;
-    ngx_file_t             file;
+    ngx_file_t             file, out;
     ngx_int_t              rc = NGX_OK;
     ngx_uint_t             i, j, n;
     char                  *rv;
@@ -950,6 +950,7 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
     ngx_template_seq_t    *seqs;
 
     ngx_memzero(&file, sizeof(ngx_file_t));
+    ngx_memzero(&out, sizeof(ngx_file_t));
 
     ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "%V:%V", &t->filename, &keyfile);
 
@@ -977,6 +978,20 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
 
     rc = ngx_template_conf_parse_yaml(cf->cycle, fdopen(file.fd, "r"), t);
 
+    if (t->out.data != NULL) {
+        out.name = t->out;
+        out.log = cf->log;
+
+        out.fd = ngx_open_file(t->out.data, NGX_FILE_WRONLY, NGX_FILE_TRUNCATE,
+                               NGX_FILE_DEFAULT_ACCESS);
+
+        if (out.fd == NGX_INVALID_FILE) {
+            ngx_conf_log_error(NGX_LOG_ERR, cf, ngx_errno,
+                               ngx_open_file_n " \"%V\" failed", &t->out);
+            return NGX_ERROR;
+        }
+    }
+
     for (j = 0; j < t->entries.nelts; j++) {
 
         conf = (ngx_template_conf_t *)
@@ -988,7 +1003,7 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
                           &conf->keys[i].key, &conf->keys[i].value);
 
         seqs = conf->seqs.elts;
-        
+
         for (n = 0; n < conf->seqs.nelts; n++) {
 
             ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "  %V", &seqs[n].key);
@@ -1008,6 +1023,21 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
                 "  template\n%V", &t->template);
         ngx_log_error(NGX_LOG_NOTICE, cf->log, 0,
                 "  text\n%V", &conf->conf);
+
+        if (t->out.data != NULL) {
+
+            if (ngx_write_file(&out, conf->conf.data, conf->conf.len,
+                               out.offset) == NGX_ERROR) {
+
+                ngx_conf_log_error(NGX_LOG_ERR, cf, ngx_errno,
+                                   ngx_write_fd_n " \"%V\" failed", &t->out);
+
+                rc = NGX_ERROR;
+                goto done;
+            }
+
+            continue;
+        }
 
         ngx_memzero(&conf_file, sizeof(ngx_conf_file_t));
 
@@ -1062,6 +1092,8 @@ done:
     cf->conf_file = prev;
 
     ngx_close_file(file.fd);
+    if (t->out.data != NULL)
+        ngx_close_file(file.fd);
 
     switch (rc) {
 
@@ -1149,6 +1181,12 @@ ngx_template_conf(ngx_conf_t *cf, ngx_template_t *t)
 
         if (ngx_eqstr(t->args.elts[j].key, "nocheck"))
             t->nocheck = 1;
+
+        if (ngx_eqstr(t->args.elts[j].key, "out")) {
+            t->out = t->args.elts[j].value;
+            if (ngx_conf_full_name(cf->cycle, &t->out, 1) != NGX_OK)
+                return NGX_CONF_ERROR;
+        }
     }
 
     if (t->filename.data == NULL) {
