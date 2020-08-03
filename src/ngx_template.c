@@ -1093,7 +1093,7 @@ done:
 
     ngx_close_file(file.fd);
     if (t->out.data != NULL)
-        ngx_close_file(file.fd);
+        ngx_close_file(out.fd);
 
     switch (rc) {
 
