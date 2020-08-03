@@ -773,6 +773,8 @@ ngx_template_conf_parse_yaml(ngx_cycle_t *cycle, FILE *f, ngx_template_t *t)
     yaml_event_type_t     type;
     ngx_int_t             rc = NGX_OK;
     ngx_uint_t            j;
+    ngx_flag_t            is_key = 1;
+    ngx_int_t             level = 0;
 
     if (fseek(f, 0, SEEK_END) == NGX_ERROR) {
         ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
@@ -822,12 +824,27 @@ ngx_template_conf_parse_yaml(ngx_cycle_t *cycle, FILE *f, ngx_template_t *t)
 
             case YAML_SCALAR_EVENT:
 
-                if (ngx_memn2cmp(t->group.data, event.data.scalar.value,
+                if (is_key && level == 1) {
+                    if (ngx_memn2cmp(t->group.data, event.data.scalar.value,
                                  t->group.len, event.data.scalar.length) == 0) {
-                    rc = ngx_template_parse_entries(&parser, t);
-                    if (rc != NGX_OK)
-                        goto done;
+                        rc = ngx_template_parse_entries(&parser, t);
+                        if (rc != NGX_OK)
+                            goto done;
+                    }
                 }
+                is_key = !is_key;
+                break;
+
+            case YAML_MAPPING_START_EVENT:
+
+                level++;
+                is_key = 1;
+                break;
+
+            case YAML_MAPPING_END_EVENT:
+
+                level--;
+                is_key = 1;
                 break;
 
             default:
