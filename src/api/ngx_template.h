@@ -58,6 +58,7 @@ typedef struct {
     ngx_array_t    templates;
     ngx_cycle_t   *cycle;
     ngx_flag_t     changed;
+    ngx_flag_t     dynamic;
 } ngx_template_main_conf_t;
 
 
