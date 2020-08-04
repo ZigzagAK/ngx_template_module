@@ -27,6 +27,13 @@ static ngx_command_t  ngx_template_commands[] = {
       0,
       NULL },
 
+    { ngx_string("dynamic_templates"),
+      NGX_MAIN_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_flag_slot,
+      0,
+      offsetof(ngx_template_main_conf_t, dynamic),
+      NULL },
+
     ngx_null_command
 
 };
@@ -78,7 +85,7 @@ ngx_template_init_worker(ngx_cycle_t *cycle)
     tmcf = (ngx_template_main_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_template_module);
 
-    if (tmcf->templates.nelts == 0)
+    if (tmcf->templates.nelts == 0 || !tmcf->dynamic)
         return NGX_OK;
 
     ev = ngx_pcalloc(cycle->pool, sizeof(ngx_event_t));
