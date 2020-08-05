@@ -555,9 +555,6 @@ ngx_template_parse_entry(ngx_pool_t *pool, yaml_parser_t *parser,
     ngx_str_set(&kv->key, "__group");
     kv->value = conf->group;
 
-    kv = ngx_array_push(&keys);
-    ngx_str_set(&kv->key, "__fullname");
-
     do {
         if (!yaml_parser_parse(parser, &event))
             return NGX_ERROR;
@@ -638,7 +635,9 @@ ngx_template_parse_entry(ngx_pool_t *pool, yaml_parser_t *parser,
                                 "%V"GSEP"%V", &conf->group,  &kv->value)
                               - conf->fullname.data;
 
-                        ((ngx_keyval_t *) keys.elts)[1].value = conf->fullname;
+                        kv = ngx_array_push(&keys);
+                        ngx_str_set(&kv->key, "__fullname");
+                        kv->value = conf->fullname;
                     }
                 }
 
@@ -704,6 +703,29 @@ ngx_template_parse_entries(yaml_parser_t *parser, ngx_template_t *t)
     type = event.type;
     yaml_event_delete(&event);
 
+    if (type == YAML_MAPPING_START_EVENT) {
+
+        conf = ngx_array_push(&t->entries);
+        if (conf == NULL) {
+            yaml_event_delete(&event);
+            goto nomem;
+        }
+        ngx_memzero(conf, t->entries.size);
+
+        conf->group = t->group;
+
+        rc = ngx_template_parse_entry(t->pool, parser, conf, t->pfkey);
+        if (rc != NGX_OK) {
+            yaml_event_delete(&event);
+            return rc;
+        }
+
+        ngx_str_set(&conf->name, "");
+        ngx_str_set(&conf->fullname, "");
+
+        return NGX_OK;
+    }
+
     if (type != YAML_SEQUENCE_START_EVENT)
         return NGX_ABORT;
 
@@ -732,11 +754,9 @@ ngx_template_parse_entries(yaml_parser_t *parser, ngx_template_t *t)
                     return rc;
                 }
 
-                if (conf->fullname.data == NULL) {
-                    ngx_log_error(NGX_LOG_ERR, t->pool->log, 0,
-                                  "mandatory tag \"name\" not found in \"%V\"",
-                                  &t->keyfile);
-                    return NGX_ABORT;
+                if (conf->name.data == NULL) {
+                    ngx_str_set(&conf->name, "");
+                    ngx_str_set(&conf->fullname, "");
                 }
 
                 break;
