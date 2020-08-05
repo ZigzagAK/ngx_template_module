@@ -1438,7 +1438,7 @@ split_key(ngx_str_t key)
 
     opts.group = kv.key;
 
-    kv = ngx_split(key, '.');
+    kv = ngx_split(kv.value, '.');
 
     opts.name = kv.key;
     opts.key = kv.value;
