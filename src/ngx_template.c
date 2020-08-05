@@ -738,7 +738,7 @@ ngx_template_parse_entries(yaml_parser_t *parser, ngx_template_t *t)
         switch (type) {
 
             case YAML_MAPPING_START_EVENT:
-
+                
                 conf = ngx_array_push(&t->entries);
                 if (conf == NULL) {
                     yaml_event_delete(&event);
@@ -876,8 +876,17 @@ ngx_template_conf_parse_yaml(ngx_cycle_t *cycle, FILE *f, ngx_template_t *t)
     } while (type != YAML_STREAM_END_EVENT);
 
     for (j = 0; j < t->entries.nelts; j++) {
+
         conf = (ngx_template_conf_t *)
                 ((u_char *) t->entries.elts + j * t->entries.size);
+
+        if (t->name.data != NULL) {
+            if (ngx_memn2cmp(t->name.data, conf->name.data,
+                             t->name.len, conf->name.len) != 0) {
+                continue;
+            }
+        }
+
         if (t->template.data != NULL) {
             conf->conf = transform(cycle, t->pool, conf, t->template);
             if (conf->conf.data == NULL)
@@ -885,7 +894,16 @@ ngx_template_conf_parse_yaml(ngx_cycle_t *cycle, FILE *f, ngx_template_t *t)
             if (conf->conf.len == 0)
                 rc = NGX_ABORT;
         }
+
+        if (t->name.data != NULL) {
+            t->entries.elts = conf;
+            t->entries.nelts = 1;
+            goto done;
+        }
     }
+
+    if (t->name.data != NULL)
+        t->entries.nelts = 0;
 
 done:
 
@@ -1198,6 +1216,9 @@ ngx_template_conf(ngx_conf_t *cf, ngx_template_t *t)
 
         if (ngx_eqstr(t->args.elts[j].key, "group"))
             t->group = t->args.elts[j].value;
+
+        if (ngx_eqstr(t->args.elts[j].key, "name"))
+            t->name = t->args.elts[j].value;
 
         if (ngx_eqstr(t->args.elts[j].key, "nocheck"))
             t->nocheck = 1;
