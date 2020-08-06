@@ -27,6 +27,7 @@ ngx_template_create_main_conf(ngx_cycle_t *cycle)
         return NULL;
 
     tmcf->cycle = cycle;
+    tmcf->dynamic = NGX_CONF_UNSET;
 
     return tmcf;
 }
