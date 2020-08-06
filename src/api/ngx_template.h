@@ -41,6 +41,7 @@ typedef struct {
 
 typedef struct {
     ngx_str_t      group;
+    ngx_str_t      name;
     ngx_args_t     args;
     ngx_array_t    entries;
     ngx_str_t      keyfile;
@@ -51,6 +52,7 @@ typedef struct {
     on_key_t       pfkey;
     ngx_pool_t    *pool;
     ngx_flag_t     nocheck;
+    ngx_str_t      out;
 } ngx_template_t;
 
 
