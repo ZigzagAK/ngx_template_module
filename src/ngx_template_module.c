@@ -85,7 +85,8 @@ ngx_template_init_worker(ngx_cycle_t *cycle)
     tmcf = (ngx_template_main_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_template_module);
 
-    if (tmcf->templates.nelts == 0 || !tmcf->dynamic)
+    if (tmcf->templates.nelts == 0
+        || tmcf->dynamic == NGX_CONF_UNSET || tmcf->dynamic == 0)
         return NGX_OK;
 
     ev = ngx_pcalloc(cycle->pool, sizeof(ngx_event_t));
