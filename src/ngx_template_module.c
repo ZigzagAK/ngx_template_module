@@ -28,7 +28,7 @@ static ngx_command_t  ngx_template_commands[] = {
       NULL },
 
     { ngx_string("dynamic_templates"),
-      NGX_MAIN_CONF|NGX_CONF_TAKE1,
+      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_FLAG,
       ngx_conf_set_flag_slot,
       0,
       offsetof(ngx_template_main_conf_t, dynamic),
