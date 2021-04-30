@@ -18,10 +18,8 @@ build_only=0
 make_clean=0
 
 DIR="$(pwd)"
-DIAG_DIR="diag"
-VCS_PATH=${DIR%/*/*}
 
-VERSION="1.16.0"
+VERSION="1.18.0"
 PCRE_VERSION="8.40"
 ZLIB_VERSION="1.2.11"
 
@@ -112,13 +110,6 @@ fi
 if [ $download -eq 1 ] && [ $dobuild -eq 0 ]; then
   download_only=1
 fi
-
-if [ $download -eq 0 ] && [ $dobuild -eq 0 ]; then
-    if [ $make_components -eq 0 ]; then 
-      exit 0
-    fi
-fi
-
 
 current_os=`uname`
 if [ "$current_os" = "Linux" ]; then
@@ -219,7 +210,7 @@ function build_release() {
   echo "Configuring release nginx-$VERSION" | tee -a $BUILD_LOG
   ./configure --prefix="$INSTALL_DIR/nginx-$VERSION$SUFFIX" \
               --with-http_auth_request_module \
-              --with-cc-opt="-g -O0 $ADDITIONAL_INCLUDES -Wno-error=unused-value -Wno-error=unused-variable -Wno-error=unused-function" \
+              --with-cc-opt="-g -O0 $ADDITIONAL_INCLUDES -Wno-error=unused-value -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=implicit-fallthrough" \
               --with-ld-opt="$ADDITIONAL_LIBS" \
               --with-stream \
               --add-module=../echo-nginx-module \
@@ -324,7 +315,7 @@ function download() {
   download_module https://github.com      yaml        libyaml                          tags/0.2.2
 
   download_module https://github.com      openresty   echo-nginx-module                master
-  download_module https://github.com      ZigzagAK    ngx_dynamic_healthcheck          1.3.0
+  download_module https://github.com      ZigzagAK    ngx_dynamic_healthcheck          1.3.3
 
   cd ..
 }
@@ -416,7 +407,7 @@ fi
 
 cd "$DIR"
 
-#exit
+exit
 
 kernel_name=$(uname -s)
 kernel_version=$(uname -r)
