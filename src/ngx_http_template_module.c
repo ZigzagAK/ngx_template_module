@@ -21,7 +21,7 @@ static ngx_http_module_t ngx_http_template_ctx = {
 };
 
 
-#define NGX_ALL_CONF (NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF)
+#define NGX_ALL_CONF (NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_HTTP_UPS_CONF)
 
 
 static ngx_command_t ngx_http_template_commands[] = {
