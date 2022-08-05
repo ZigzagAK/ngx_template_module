@@ -19,7 +19,7 @@ static ngx_stream_module_t ngx_stream_template_ctx = {
 };
 
 
-#define NGX_ALL_CONF (NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF)
+#define NGX_ALL_CONF (NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_STREAM_UPS_CONF)
 
 
 static ngx_command_t ngx_stream_template_commands[] = {
