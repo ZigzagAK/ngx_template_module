@@ -797,36 +797,14 @@ ngx_template_conf_parse_yaml(ngx_cycle_t *cycle, FILE *f, ngx_template_t *t)
     ngx_int_t             level = 0;
     ngx_str_t             s;
 
-    if (fseek(f, 0, SEEK_END) == NGX_ERROR) {
-        ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                      "seek() \"%V\" failed", &t->keyfile);
+    if (f == NULL) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0, "failed to fdopen");
         return NGX_ERROR;
     }
-
-    t->yaml.len = ftell(f);
-    if (t->yaml.len == (size_t) NGX_ERROR) {
-        ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                      "tell() \"%V\" failed", &t->keyfile);
-        return NGX_ERROR;
-    }
-    t->yaml.data = ngx_alloc(t->yaml.len, cycle->log);
-    if (t->yaml.data == NULL) {
-        ngx_log_error(NGX_LOG_ERR, cycle->log, 0, "no memory");
-        return NGX_ERROR;
-    }
-
-    rewind(f);
-
-    if (fread(t->yaml.data, t->yaml.len, 1, f) != 1) {
-        ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                      "read() \"%V\" failed", &t->keyfile);
-        return NGX_ERROR;
-    }
-
-    rewind(f);
 
     if (!yaml_parser_initialize(&parser)) {
         ngx_log_error(NGX_LOG_WARN, cycle->log, 0, "can't initialize yaml");
+        fclose(f);
         return NGX_ERROR;
     }
 
@@ -921,6 +899,8 @@ done:
     }
 
     yaml_parser_delete(&parser);
+
+    fclose(f);
 
     return rc;
 }
@@ -1022,7 +1002,7 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
             sizeof(ngx_template_conf_t)) == NGX_ERROR)
         goto nomem;
 
-    rc = ngx_template_conf_parse_yaml(cf->cycle, fdopen(file.fd, "r"), t);
+    rc = ngx_template_conf_parse_yaml(cf->cycle, fdopen(dup(file.fd), "r"), t);
 
     if (t->out.data != NULL) {
         out.name = t->out;
@@ -1261,11 +1241,18 @@ ngx_template_conf(ngx_conf_t *cf, ngx_template_t *t)
 }
 
 
+static void destroy_pool(void *data)
+{
+    ngx_destroy_pool(data);
+}
+
+
 ngx_template_t *
 ngx_template_add(ngx_conf_t *cf, on_key_t pfkey)
 {
     ngx_template_main_conf_t  *tmcf;
     ngx_template_t            *t;
+    ngx_pool_cleanup_t        *cln;
 
     extern ngx_module_t ngx_template_module;
 
@@ -1289,6 +1276,16 @@ ngx_template_add(ngx_conf_t *cf, on_key_t pfkey)
         ngx_destroy_pool(t->pool);
         return NULL;
     }
+
+    cln = ngx_pool_cleanup_add(cf->cycle->pool, 0);
+    if (cln == NULL) {
+        tmcf->templates.nelts--;
+        ngx_destroy_pool(t->pool);
+        return NULL;
+    }
+
+    cln->handler = destroy_pool;
+    cln->data = t->pool;
 
     return t;
 
@@ -1377,7 +1374,7 @@ ngx_template_check_template(ngx_cycle_t *cycle, ngx_template_t *old)
         goto done;
     }
 
-    rc = ngx_template_conf_parse_yaml(cycle, fdopen(file.fd, "r"), &t);
+    rc = ngx_template_conf_parse_yaml(cycle, fdopen(dup(file.fd), "r"), &t);
     if (rc != NGX_OK)
         goto done;
 
@@ -1424,7 +1421,6 @@ done:
 
         old->entries = t.entries;
         old->pool = t.pool;
-        old->yaml = t.yaml;
         old->template = t.template;
     }
 
