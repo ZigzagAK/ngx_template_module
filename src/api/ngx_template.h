@@ -45,7 +45,6 @@ typedef struct {
     ngx_args_t     args;
     ngx_array_t    entries;
     ngx_str_t      keyfile;
-    ngx_str_t      yaml;      // alloc from ngx_calloc
     ngx_str_t      filename;
     ngx_str_t      template;
     time_t         updated;
