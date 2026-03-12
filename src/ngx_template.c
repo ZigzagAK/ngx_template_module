@@ -52,13 +52,15 @@ ngx_template_read_template(ngx_conf_t *cf, ngx_template_t *t)
     file.log = cf->log;
 
     file.fd = ngx_open_file(filename.data, NGX_FILE_RDONLY,
-                            NGX_FILE_OPEN, NGX_FILE_DEFAULT_ACCESS);
+                            NGX_FILE_OPEN, NGX_FILE_OWNER_ACCESS);
 
     if (file.fd == NGX_INVALID_FILE) {
         ngx_conf_log_error(NGX_LOG_ERR, cf, ngx_errno,
                       ngx_open_file_n " \"%V\" failed", &filename);
         return NGX_ERROR;
     }
+
+    chmod((char *) file.name.data, S_IRUSR | S_IWUSR);
 
     if (ngx_fd_info(file.fd, &file.info) == NGX_FILE_ERROR) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno,
@@ -990,13 +992,15 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
     file.log = cf->log;
 
     file.fd = ngx_open_file(keyfile.data, NGX_FILE_RDONLY,
-                            NGX_FILE_OPEN, NGX_FILE_DEFAULT_ACCESS);
+                            NGX_FILE_OPEN, NGX_FILE_OWNER_ACCESS);
 
     if (file.fd == NGX_INVALID_FILE) {
         ngx_conf_log_error(NGX_LOG_ERR, cf, ngx_errno,
                       ngx_open_file_n " \"%V\" failed", &keyfile);
         return NGX_ERROR;
     }
+
+    chmod((char *) file.name.data, S_IRUSR | S_IWUSR);
 
     if (ngx_array_init(&t->entries, t->pool, 10,
             sizeof(ngx_template_conf_t)) == NGX_ERROR)
@@ -1009,13 +1013,15 @@ ngx_template_conf_apply(ngx_conf_t *cf, ngx_template_t *t)
         out.log = cf->log;
 
         out.fd = ngx_open_file(t->out.data, NGX_FILE_WRONLY, NGX_FILE_TRUNCATE,
-                               NGX_FILE_DEFAULT_ACCESS);
+                               NGX_FILE_OWNER_ACCESS);
 
         if (out.fd == NGX_INVALID_FILE) {
             ngx_conf_log_error(NGX_LOG_ERR, cf, ngx_errno,
                                ngx_open_file_n " \"%V\" failed", &t->out);
             return NGX_ERROR;
         }
+
+        chmod((char *) out.name.data, S_IRUSR | S_IWUSR);
     }
 
     for (j = 0; j < t->entries.nelts; j++) {
@@ -1351,13 +1357,15 @@ ngx_template_check_template(ngx_cycle_t *cycle, ngx_template_t *old)
         goto done;
 
     file.fd = ngx_open_file(file.name.data, NGX_FILE_RDONLY,
-                            NGX_FILE_OPEN, NGX_FILE_DEFAULT_ACCESS);
+                            NGX_FILE_OPEN, NGX_FILE_OWNER_ACCESS);
 
     if (file.fd == NGX_INVALID_FILE) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, ngx_errno,
                       ngx_open_file_n " \"%V\" failed", &t.keyfile);
         goto done;
     }
+
+    chmod((char *) file.name.data, S_IRUSR | S_IWUSR);
 
     if (ngx_fd_info(file.fd, &file.info) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
